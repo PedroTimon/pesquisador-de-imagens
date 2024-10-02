@@ -13,7 +13,7 @@ async function fetchImages(query) {
     try {
         const response = await fetch(url);
         const data = await response.json();
-        images = data.results;
+        images = page === 1 ? data.results : images.concat(data.results);
 
         if (page === 1) {
             imgContainer.innerHTML = ''; 
@@ -52,12 +52,10 @@ function toggleFavorite(pic) {
     const isFavorite = favorites.find(fav => fav.id === pic.id);
 
     if (isFavorite) {
-
         const updatedFavorites = favorites.filter(fav => fav.id !== pic.id);
         localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
         alert("Imagem removida dos favoritos.");
     } else {
-
         favorites.push(pic);
         localStorage.setItem('favorites', JSON.stringify(favorites));
         alert("Imagem adicionada aos favoritos.");
@@ -112,13 +110,13 @@ filterInput.addEventListener("input", (event) => {
     displayImages(filteredImages);
 });
 
-window.onscroll = function() {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight && !loading) {
+window.onscroll = async function() {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && !loading) {
         loading = true;
         const query = document.getElementById("searchInput").value;
-        page++;
         if (query) {
-            fetchImages(query);
+            page++;
+            await fetchImages(query);
         }
     }
 };
